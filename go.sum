@@ -2,3 +2,5 @@ go.loafoe.dev/bitfield v1.0.0 h1:GzRxQNdu4UkTgXEwkBxr6CDu1qeNauggoZQLb/5Lzjc=
 go.loafoe.dev/bitfield v1.0.0/go.mod h1:CzkZA0qQBOgi0f97fDNL+BfCczGJkNTKZQAJ4X1/OZU=
 go.loafoe.dev/bitfield v1.1.0 h1:XO5RSUD4zykKNNhKPlMyuhfcaj9l+hWV06IJ8J5/RIg=
 go.loafoe.dev/bitfield v1.1.0/go.mod h1:CzkZA0qQBOgi0f97fDNL+BfCczGJkNTKZQAJ4X1/OZU=
+go.loafoe.dev/bitfield v1.2.0 h1:54JNvMAPEyZnbLSZfNxv3jgSRVG3AFpXU/GqU1bvshQ=
+go.loafoe.dev/bitfield v1.2.0/go.mod h1:CzkZA0qQBOgi0f97fDNL+BfCczGJkNTKZQAJ4X1/OZU=
