@@ -11,11 +11,21 @@ import (
 
 type LDID [16]byte // Fixed-size byte slice holding the UUID.
 
-func generateUnixTimestampMS() uint64 {
+type Generator interface {
+	GenerateUnixTimestampMS() uint64
+	GenerateRandomBits(n int64) (uint64, error)
+}
+
+type DefaultGenerator struct{}
+
+// Compile-time check to ensure DefaultGenerator implements Generator
+var _ Generator = &DefaultGenerator{}
+
+func (g *DefaultGenerator) GenerateUnixTimestampMS() uint64 {
 	return uint64(time.Now().UnixMilli())
 }
 
-func generateRandomBits(n int64) (uint64, error) {
+func (g *DefaultGenerator) GenerateRandomBits(n int64) (uint64, error) {
 	max := &big.Int{}
 	max.Exp(big.NewInt(2), big.NewInt(n), nil).Sub(max, big.NewInt(1)) // 2^n-1
 
@@ -27,11 +37,12 @@ func generateRandomBits(n int64) (uint64, error) {
 	return r.Uint64(), nil
 }
 
-func New() (*LDID, error) {
+// NewWithGenerator creates a new LDID with a provided generator
+func NewWithGenerator(g Generator) (*LDID, error) {
 	bf := bitfield.New(128)
 
 	// Unix Timestamp (48 bits, 0-47)
-	timestamp := generateUnixTimestampMS()
+	timestamp := g.GenerateUnixTimestampMS()
 	if err := bf.InsertUint(bf, 0, 48, timestamp); err != nil {
 		return &LDID{}, err
 	}
@@ -43,7 +54,7 @@ func New() (*LDID, error) {
 	}
 
 	// Pseudo-random data A (12 bits, 52-63)
-	randA, err := generateRandomBits(12)
+	randA, err := g.GenerateRandomBits(12)
 	if err != nil {
 		return &LDID{}, err
 	}
@@ -58,7 +69,7 @@ func New() (*LDID, error) {
 	}
 
 	// Pseudo-random data B (62 bits, 66-127)
-	randB, err := generateRandomBits(62)
+	randB, err := g.GenerateRandomBits(62)
 	if err != nil {
 		return &LDID{}, err
 	}
@@ -72,6 +83,15 @@ func New() (*LDID, error) {
 	copy(ldid[:], b[:16])
 
 	return &ldid, nil
+}
+
+// New creates a new LDID with the default generator
+func New() (*LDID, error) {
+	// Create an instance of DefaultGenerator
+	defaultGen := &DefaultGenerator{}
+
+	// Use the default when creating a new LDID
+	return NewWithGenerator(defaultGen)
 }
 
 // String formats the UUID bytes into the canonical string representation.
