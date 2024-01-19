@@ -99,3 +99,28 @@ func (id *LDID) String() string {
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
 		id[0:4], id[4:6], id[6:8], id[8:10], id[10:])
 }
+
+func (id *LDID) GetTimestamp() (uint64, error) {
+	bf := bitfield.FromBytes(id[:])
+	return bf.ExtractUint(bf, 0, 48)
+}
+
+func (id *LDID) GetVersion() (uint64, error) {
+	bf := bitfield.FromBytes(id[:])
+	return bf.ExtractUint(bf, 48, 4)
+}
+
+func (id *LDID) GetRandA() (uint64, error) {
+	bf := bitfield.FromBytes(id[:])
+	return bf.ExtractUint(bf, 52, 12)
+}
+
+func (id *LDID) GetVariant() (uint64, error) {
+	bf := bitfield.FromBytes(id[:])
+	return bf.ExtractUint(bf, 64, 2)
+}
+
+func (id *LDID) GetRandB() (uint64, error) {
+	bf := bitfield.FromBytes(id[:])
+	return bf.ExtractUint(bf, 66, 62)
+}
