@@ -9,7 +9,9 @@ import (
 	"go.loafoe.dev/bitfield/v2"
 )
 
-type LDID [16]byte // Fixed-size byte slice holding the UUID.
+type LDID struct {
+	bf *bitfield.BitField
+}
 
 type Generator interface {
 	GenerateUnixTimestampMS() uint64
@@ -39,17 +41,19 @@ func (g *DefaultGenerator) GenerateRandomBits(n int64) (uint64, error) {
 
 // NewWithGenerator creates a new LDID with a provided generator
 func NewWithGenerator(g Generator) (*LDID, error) {
-	bf := bitfield.BigEndian.New(128)
+	var id = &LDID{
+		bf: bitfield.BigEndian.New(128),
+	}
 
 	// Unix Timestamp (48 bits, 0-47)
 	timestamp := g.GenerateUnixTimestampMS()
-	if err := bf.InsertUint64(0, 48, timestamp); err != nil {
+	if err := id.bf.InsertUint64(0, 48, timestamp); err != nil {
 		return &LDID{}, err
 	}
 
 	// Version (4 bits, 48-51)
 	version := uint64(0b0111)
-	if err := bf.InsertUint64(48, 4, version); err != nil {
+	if err := id.bf.InsertUint64(48, 4, version); err != nil {
 		return &LDID{}, err
 	}
 
@@ -58,13 +62,13 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := bf.InsertUint64(52, 12, randA); err != nil {
+	if err := id.bf.InsertUint64(52, 12, randA); err != nil {
 		return &LDID{}, err
 	}
 
 	// Variant (2 bits, 64-65)
 	variant := uint64(0b10)
-	if err := bf.InsertUint64(64, 2, variant); err != nil {
+	if err := id.bf.InsertUint64(64, 2, variant); err != nil {
 		return &LDID{}, err
 	}
 
@@ -73,16 +77,11 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := bf.InsertUint64(66, 62, randB); err != nil {
+	if err := id.bf.InsertUint64(66, 62, randB); err != nil {
 		return &LDID{}, err
 	}
 
-	var ldid LDID
-
-	b := bf.Bytes()
-	copy(ldid[:], b[:16])
-
-	return &ldid, nil
+	return id, nil
 }
 
 // New creates a new LDID with the default generator
@@ -96,31 +95,27 @@ func New() (*LDID, error) {
 
 // String formats the UUID bytes into the canonical string representation.
 func (id *LDID) String() string {
+	bytes := id.bf.Bytes()
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
-		id[0:4], id[4:6], id[6:8], id[8:10], id[10:])
+		bytes[0:4], bytes[4:6], bytes[6:8], bytes[8:10], bytes[10:])
 }
 
 func (id *LDID) Timestamp() (uint64, error) {
-	bf := bitfield.BigEndian.FromBytes(id[:], 128)
-	return bf.ExtractUint64(0, 48)
+	return id.bf.ExtractUint64(0, 48)
 }
 
 func (id *LDID) Version() (uint64, error) {
-	bf := bitfield.BigEndian.FromBytes(id[:], 128)
-	return bf.ExtractUint64(48, 4)
+	return id.bf.ExtractUint64(48, 4)
 }
 
 func (id *LDID) RandA() (uint64, error) {
-	bf := bitfield.BigEndian.FromBytes(id[:], 128)
-	return bf.ExtractUint64(52, 12)
+	return id.bf.ExtractUint64(52, 12)
 }
 
 func (id *LDID) Variant() (uint64, error) {
-	bf := bitfield.BigEndian.FromBytes(id[:], 128)
-	return bf.ExtractUint64(64, 2)
+	return id.bf.ExtractUint64(64, 2)
 }
 
 func (id *LDID) RandB() (uint64, error) {
-	bf := bitfield.BigEndian.FromBytes(id[:], 128)
-	return bf.ExtractUint64(66, 62)
+	return id.bf.ExtractUint64(66, 62)
 }
