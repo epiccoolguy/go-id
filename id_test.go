@@ -1,7 +1,9 @@
 package id
 
 import (
+	"crypto/rand"
 	"errors"
+	"io"
 	"regexp"
 	"testing"
 )
@@ -9,7 +11,7 @@ import (
 type MockGenerator struct {
 	*DefaultGenerator           // Embed the default generator so we only have to override methods we care about
 	GenerateUnixTimestampMSFunc func() uint64
-	GenerateRandomBitsFunc      func(n int64) (uint64, error)
+	GenerateRandomBitsFunc      func(randReader io.Reader, n int64) (uint64, error)
 }
 
 // Compile-time check to ensure MockGenerator implements Generator
@@ -22,11 +24,50 @@ func (m *MockGenerator) GenerateUnixTimestampMS() uint64 {
 	return m.DefaultGenerator.GenerateUnixTimestampMS()
 }
 
-func (m *MockGenerator) GenerateRandomBits(n int64) (uint64, error) {
+func (m *MockGenerator) GenerateRandomBits(randReader io.Reader, n int64) (uint64, error) {
 	if m.GenerateRandomBitsFunc != nil {
-		return m.GenerateRandomBitsFunc(n)
+		return m.GenerateRandomBitsFunc(randReader, n)
 	}
-	return m.DefaultGenerator.GenerateRandomBits(n)
+	return m.DefaultGenerator.GenerateRandomBits(randReader, n)
+}
+
+// RandomReader is an interface that matches the Read method from rand.Reader
+type RandomReader interface {
+	Read(b []byte) (n int, err error)
+}
+
+type MockRandomReader struct{}
+
+func (m *MockRandomReader) Read(b []byte) (n int, err error) {
+	return 0, errors.New("mock error")
+}
+
+func TestGenerateRandomBits(t *testing.T) {
+	t.Run("n too large", func(t *testing.T) {
+		_, err := defaultGenerator.GenerateRandomBits(rand.Reader, 65)
+
+		if err == nil {
+			t.Fatalf("GenerateRandomBits() error = %v, wantErr true", err)
+		}
+	})
+
+	t.Run("n = 0", func(t *testing.T) {
+		_, err := defaultGenerator.GenerateRandomBits(rand.Reader, 0)
+
+		if err == nil {
+			t.Fatalf("GenerateRandomBits() error = %v, wantErr true", err)
+		}
+	})
+
+	t.Run("error in crypto/rand.Reader", func(t *testing.T) {
+		mockRandomReader := &MockRandomReader{}
+
+		_, err := defaultGenerator.GenerateRandomBits(mockRandomReader, 64)
+
+		if err == nil {
+			t.Fatalf("GenerateRandomBits() error = %v, wantErr true", err)
+		}
+	})
 }
 
 func TestNewWithGenerator(t *testing.T) {
@@ -71,7 +112,7 @@ func TestNewWithGenerator(t *testing.T) {
 		expectedRandB := uint64(0b11000011110000111100001111000011110000111100001111000011110000) // 62 bits
 
 		m := &MockGenerator{
-			GenerateRandomBitsFunc: func(n int64) (uint64, error) {
+			GenerateRandomBitsFunc: func(randReader io.Reader, n int64) (uint64, error) {
 				return 0b1111000011110000111100001111000011110000111100001111000011110000, nil
 			},
 		}
@@ -109,7 +150,7 @@ func TestNewWithGenerator(t *testing.T) {
 
 	t.Run("GenerateRandomBits failing", func(t *testing.T) {
 		m := &MockGenerator{
-			GenerateRandomBitsFunc: func(n int64) (uint64, error) {
+			GenerateRandomBitsFunc: func(randReader io.Reader, n int64) (uint64, error) {
 				return 0, errors.New("mock error")
 			},
 		}

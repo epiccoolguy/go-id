@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"io"
 	"math/big"
 	"time"
 
@@ -30,7 +31,7 @@ type LDID struct {
 
 type Generator interface {
 	GenerateUnixTimestampMS() uint64
-	GenerateRandomBits(n int64) (uint64, error)
+	GenerateRandomBits(randReader io.Reader, n int64) (uint64, error)
 }
 
 type DefaultGenerator struct{}
@@ -41,7 +42,14 @@ func (g *DefaultGenerator) GenerateUnixTimestampMS() uint64 {
 	return uint64(time.Now().UnixMilli())
 }
 
-func (g *DefaultGenerator) GenerateRandomBits(n int64) (uint64, error) {
+func (g *DefaultGenerator) GenerateRandomBits(randReader io.Reader, n int64) (r uint64, err error) {
+	// rand.Int can panic if n <= 0, so we need to recover from that
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("crypto/rand: %v", r)
+		}
+	}()
+
 	max := &big.Int{}
 	max.Exp(big.NewInt(2), big.NewInt(n), nil).Sub(max, big.NewInt(1)) // 2^n-1
 
@@ -49,12 +57,12 @@ func (g *DefaultGenerator) GenerateRandomBits(n int64) (uint64, error) {
 		return 0, errors.New("failed to generate random bits: n is too large to fit in a uint64")
 	}
 
-	r, err := rand.Int(rand.Reader, max)
+	rb, err := rand.Int(randReader, max)
 	if err != nil {
 		return 0, fmt.Errorf("failed to generate random bits: %w", err)
 	}
 
-	return r.Uint64(), nil
+	return rb.Uint64(), nil
 }
 
 // NewWithGenerator creates a new LDID with a provided generator
@@ -76,7 +84,7 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	}
 
 	// Pseudo-random data A (12 bits, 52-63)
-	randA, err := g.GenerateRandomBits(12)
+	randA, err := g.GenerateRandomBits(rand.Reader, 12)
 	if err != nil {
 		return &LDID{}, err
 	}
@@ -91,7 +99,7 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	}
 
 	// Pseudo-random data B (62 bits, 66-127)
-	randB, err := g.GenerateRandomBits(62)
+	randB, err := g.GenerateRandomBits(rand.Reader, 62)
 	if err != nil {
 		return &LDID{}, err
 	}
