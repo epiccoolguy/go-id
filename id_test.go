@@ -88,7 +88,7 @@ func TestNewWithGenerator(t *testing.T) {
 		}
 
 		if timestamp, _ := ldid.Timestamp(); timestamp != expectedTimestamp {
-			t.Fatalf("GetTimestamp() = %v, want %v", timestamp, expectedTimestamp)
+			t.Fatalf("Timestamp() = %v, want %v", timestamp, expectedTimestamp)
 		}
 	})
 
@@ -103,7 +103,7 @@ func TestNewWithGenerator(t *testing.T) {
 		}
 
 		if version, _ := ldid.Version(); version != expectedVersion {
-			t.Fatalf("GetVersion() = %v, want %v", version, expectedVersion)
+			t.Fatalf("Version() = %v, want %v", version, expectedVersion)
 		}
 	})
 
@@ -125,11 +125,11 @@ func TestNewWithGenerator(t *testing.T) {
 		}
 
 		if randA, _ := ldid.RandA(); randA != expectedRandA {
-			t.Fatalf("GetRandA() = %v, want %v", randA, expectedRandA)
+			t.Fatalf("RandA() = %v, want %v", randA, expectedRandA)
 		}
 
 		if randB, _ := ldid.RandB(); randB != expectedRandB {
-			t.Fatalf("GetRandB() = %v, want %v", randB, expectedRandB)
+			t.Fatalf("RandB() = %v, want %v", randB, expectedRandB)
 		}
 	})
 
@@ -144,7 +144,7 @@ func TestNewWithGenerator(t *testing.T) {
 		}
 
 		if variant, _ := ldid.Variant(); variant != expectedVariant {
-			t.Fatalf("GetVariant() = %v, want %v", variant, expectedVariant)
+			t.Fatalf("Variant() = %v, want %v", variant, expectedVariant)
 		}
 	})
 
