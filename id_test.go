@@ -148,10 +148,28 @@ func TestNewWithGenerator(t *testing.T) {
 		}
 	})
 
-	t.Run("GenerateRandomBits failing", func(t *testing.T) {
+	t.Run("GenerateRandomBits failing on Rand A", func(t *testing.T) {
 		m := &MockGenerator{
 			GenerateRandomBitsFunc: func(randReader io.Reader, n int64) (uint64, error) {
 				return 0, errors.New("mock error")
+			},
+		}
+
+		_, err := NewWithGenerator(m)
+
+		if err == nil {
+			t.Fatalf("NewWithGenerator() error = %v, wantErr true", err)
+		}
+	})
+
+	t.Run("GenerateRandomBits failing on Rand B", func(t *testing.T) {
+		m := &MockGenerator{
+			GenerateRandomBitsFunc: func(randReader io.Reader, n int64) (uint64, error) {
+				// first request is 12 bits, second is 62 bits
+				if n >= 62 {
+					return 0, errors.New("mock error")
+				}
+				return defaultGenerator.GenerateRandomBits(randReader, n)
 			},
 		}
 
