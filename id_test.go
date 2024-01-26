@@ -54,7 +54,7 @@ func TestNewWithGenerator(t *testing.T) {
 	t.Run("Version", func(t *testing.T) {
 		expectedVersion := uint64(0b0111)
 
-		ldid, err := NewWithGenerator(&DefaultGenerator{})
+		ldid, err := New()
 
 		if err != nil {
 			t.Fatalf("New() error = %v, wantErr %v", err, false)
@@ -95,7 +95,7 @@ func TestNewWithGenerator(t *testing.T) {
 	t.Run("Variant", func(t *testing.T) {
 		expectedVariant := uint64(0b10)
 
-		ldid, err := NewWithGenerator(&DefaultGenerator{})
+		ldid, err := New()
 
 		if err != nil {
 			t.Fatalf("New() error = %v, wantErr %v", err, false)

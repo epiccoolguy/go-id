@@ -35,8 +35,7 @@ type Generator interface {
 
 type DefaultGenerator struct{}
 
-// Compile-time check to ensure DefaultGenerator implements Generator
-var _ Generator = &DefaultGenerator{}
+var defaultGenerator Generator = &DefaultGenerator{}
 
 func (g *DefaultGenerator) GenerateUnixTimestampMS() uint64 {
 	return uint64(time.Now().UnixMilli())
@@ -105,11 +104,8 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 
 // New creates a new LDID with the default generator
 func New() (*LDID, error) {
-	// Create an instance of DefaultGenerator
-	defaultGen := &DefaultGenerator{}
-
 	// Use the default when creating a new LDID
-	return NewWithGenerator(defaultGen)
+	return NewWithGenerator(defaultGenerator)
 }
 
 // String formats the UUID bytes into the canonical string representation.
