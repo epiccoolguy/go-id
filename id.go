@@ -100,27 +100,27 @@ func (id *LDID) String() string {
 		id[0:4], id[4:6], id[6:8], id[8:10], id[10:])
 }
 
-func (id *LDID) GetTimestamp() (uint64, error) {
+func (id *LDID) Timestamp() (uint64, error) {
 	bf := bitfield.BigEndian.FromBytes(id[:], 128)
 	return bf.ExtractUint64(0, 48)
 }
 
-func (id *LDID) GetVersion() (uint64, error) {
+func (id *LDID) Version() (uint64, error) {
 	bf := bitfield.BigEndian.FromBytes(id[:], 128)
 	return bf.ExtractUint64(48, 4)
 }
 
-func (id *LDID) GetRandA() (uint64, error) {
+func (id *LDID) RandA() (uint64, error) {
 	bf := bitfield.BigEndian.FromBytes(id[:], 128)
 	return bf.ExtractUint64(52, 12)
 }
 
-func (id *LDID) GetVariant() (uint64, error) {
+func (id *LDID) Variant() (uint64, error) {
 	bf := bitfield.BigEndian.FromBytes(id[:], 128)
 	return bf.ExtractUint64(64, 2)
 }
 
-func (id *LDID) GetRandB() (uint64, error) {
+func (id *LDID) RandB() (uint64, error) {
 	bf := bitfield.BigEndian.FromBytes(id[:], 128)
 	return bf.ExtractUint64(66, 62)
 }
