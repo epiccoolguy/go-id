@@ -73,37 +73,28 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 
 	// Unix Timestamp (48 bits, 0-47)
 	timestamp := g.GenerateUnixTimestampMS()
-	if err := id.bf.InsertUint64(timestampOffset, timestampSize, timestamp); err != nil {
-		return &LDID{}, err
-	}
-
 	// Version (4 bits, 48-51)
 	version := uint64(0b0111)
-	if err := id.bf.InsertUint64(versionOffset, versionSize, version); err != nil {
-		return &LDID{}, err
-	}
-
 	// Pseudo-random data A (12 bits, 52-63)
 	randA, err := g.GenerateRandomBits(rand.Reader, 12)
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := id.bf.InsertUint64(randAOffset, randASize, randA); err != nil {
-		return &LDID{}, err
-	}
-
 	// Variant (2 bits, 64-65)
 	variant := uint64(0b10)
-	if err := id.bf.InsertUint64(variantOffset, variantSize, variant); err != nil {
-		return &LDID{}, err
-	}
-
 	// Pseudo-random data B (62 bits, 66-127)
 	randB, err := g.GenerateRandomBits(rand.Reader, 62)
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := id.bf.InsertUint64(randBOffset, randBSize, randB); err != nil {
+
+	id.bf.InsertUint64(timestampOffset, timestampSize, timestamp)
+	id.bf.InsertUint64(versionOffset, versionSize, version)
+	id.bf.InsertUint64(randAOffset, randASize, randA)
+	id.bf.InsertUint64(variantOffset, variantSize, variant)
+	id.bf.InsertUint64(randBOffset, randBSize, randB)
+
+	if err := id.bf.Error(); err != nil {
 		return &LDID{}, err
 	}
 

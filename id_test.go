@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// Mocks
+
 type MockGenerator struct {
 	*DefaultGenerator           // Embed the default generator so we only have to override methods we care about
 	GenerateUnixTimestampMSFunc func() uint64
@@ -41,6 +43,8 @@ type MockRandomReader struct{}
 func (m *MockRandomReader) Read(b []byte) (n int, err error) {
 	return 0, errors.New("mock error")
 }
+
+// Test functions
 
 func TestGenerateRandomBits(t *testing.T) {
 	t.Run("n too large", func(t *testing.T) {
@@ -83,7 +87,7 @@ func TestNewWithGenerator(t *testing.T) {
 		ldid, err := NewWithGenerator(m)
 
 		if err != nil {
-			t.Fatalf("New() error = %v, wantErr %v", err, false)
+			t.Fatalf("NewWithGenerator() error = %v, wantErr %v", err, false)
 			return
 		}
 
@@ -95,10 +99,10 @@ func TestNewWithGenerator(t *testing.T) {
 	t.Run("Version", func(t *testing.T) {
 		expectedVersion := uint64(0b0111)
 
-		ldid, err := New()
+		ldid, err := NewWithGenerator(defaultGenerator)
 
 		if err != nil {
-			t.Fatalf("New() error = %v, wantErr %v", err, false)
+			t.Fatalf("NewWithGenerator() error = %v, wantErr %v", err, false)
 			return
 		}
 
@@ -120,7 +124,7 @@ func TestNewWithGenerator(t *testing.T) {
 		ldid, err := NewWithGenerator(m)
 
 		if err != nil {
-			t.Fatalf("New() error = %v, wantErr %v", err, false)
+			t.Fatalf("NewWithGenerator() error = %v, wantErr %v", err, false)
 			return
 		}
 
@@ -136,10 +140,10 @@ func TestNewWithGenerator(t *testing.T) {
 	t.Run("Variant", func(t *testing.T) {
 		expectedVariant := uint64(0b10)
 
-		ldid, err := New()
+		ldid, err := NewWithGenerator(defaultGenerator)
 
 		if err != nil {
-			t.Fatalf("New() error = %v, wantErr %v", err, false)
+			t.Fatalf("NewWithGenerator() error = %v, wantErr %v", err, false)
 			return
 		}
 
