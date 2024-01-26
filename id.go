@@ -2,6 +2,7 @@ package id
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -31,9 +32,13 @@ func (g *DefaultGenerator) GenerateRandomBits(n int64) (uint64, error) {
 	max := &big.Int{}
 	max.Exp(big.NewInt(2), big.NewInt(n), nil).Sub(max, big.NewInt(1)) // 2^n-1
 
+	if !max.IsUint64() {
+		return 0, errors.New("failed to generate random bits: n is too large to fit in a uint64")
+	}
+
 	r, err := rand.Int(rand.Reader, max)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to generate random bits: %w", err)
 	}
 
 	return r.Uint64(), nil
