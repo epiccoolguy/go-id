@@ -10,17 +10,18 @@ import (
 	"go.loafoe.dev/bitfield/v2"
 )
 
+// Constants defining the size and offset of various fields in an LDID.
 const (
-	TimestampSize   uint64 = 48
-	TimestampOffset uint64 = 0
-	VersionSize     uint64 = 4
-	VersionOffset   uint64 = 48
-	RandASize       uint64 = 12
-	RandAOffset     uint64 = 52
-	VariantSize     uint64 = 2
-	VariantOffset   uint64 = 64
-	RandBSize       uint64 = 62
-	RandBOffset     uint64 = 66
+	timestampSize   uint64 = 48 // Size of the timestamp field in bits.
+	timestampOffset uint64 = 0  // Offset of the timestamp field in bits.
+	versionSize     uint64 = 4  // Size of the version field in bits.
+	versionOffset   uint64 = 48 // Offset of the version field in bits.
+	randASize       uint64 = 12 // Size of the random data A field in bits.
+	randAOffset     uint64 = 52 // Offset of the random data A field in bits.
+	variantSize     uint64 = 2  // Size of the variant field in bits.
+	variantOffset   uint64 = 64 // Offset of the variant field in bits.
+	randBSize       uint64 = 62 // Size of the random data B field in bits.
+	randBOffset     uint64 = 66 // Offset of the random data B field in bits.
 )
 
 type LDID struct {
@@ -65,13 +66,13 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 
 	// Unix Timestamp (48 bits, 0-47)
 	timestamp := g.GenerateUnixTimestampMS()
-	if err := id.bf.InsertUint64(TimestampOffset, TimestampSize, timestamp); err != nil {
+	if err := id.bf.InsertUint64(timestampOffset, timestampSize, timestamp); err != nil {
 		return &LDID{}, err
 	}
 
 	// Version (4 bits, 48-51)
 	version := uint64(0b0111)
-	if err := id.bf.InsertUint64(VersionOffset, VersionSize, version); err != nil {
+	if err := id.bf.InsertUint64(versionOffset, versionSize, version); err != nil {
 		return &LDID{}, err
 	}
 
@@ -80,13 +81,13 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := id.bf.InsertUint64(RandAOffset, RandASize, randA); err != nil {
+	if err := id.bf.InsertUint64(randAOffset, randASize, randA); err != nil {
 		return &LDID{}, err
 	}
 
 	// Variant (2 bits, 64-65)
 	variant := uint64(0b10)
-	if err := id.bf.InsertUint64(VariantOffset, VariantSize, variant); err != nil {
+	if err := id.bf.InsertUint64(variantOffset, variantSize, variant); err != nil {
 		return &LDID{}, err
 	}
 
@@ -95,7 +96,7 @@ func NewWithGenerator(g Generator) (*LDID, error) {
 	if err != nil {
 		return &LDID{}, err
 	}
-	if err := id.bf.InsertUint64(RandBOffset, RandBSize, randB); err != nil {
+	if err := id.bf.InsertUint64(randBOffset, randBSize, randB); err != nil {
 		return &LDID{}, err
 	}
 
@@ -119,21 +120,21 @@ func (id *LDID) String() string {
 }
 
 func (id *LDID) Timestamp() (uint64, error) {
-	return id.bf.ExtractUint64(TimestampOffset, TimestampSize)
+	return id.bf.ExtractUint64(timestampOffset, timestampSize)
 }
 
 func (id *LDID) Version() (uint64, error) {
-	return id.bf.ExtractUint64(VersionOffset, VersionSize)
+	return id.bf.ExtractUint64(versionOffset, versionSize)
 }
 
 func (id *LDID) RandA() (uint64, error) {
-	return id.bf.ExtractUint64(RandAOffset, RandASize)
+	return id.bf.ExtractUint64(randAOffset, randASize)
 }
 
 func (id *LDID) Variant() (uint64, error) {
-	return id.bf.ExtractUint64(VariantOffset, VariantSize)
+	return id.bf.ExtractUint64(variantOffset, variantSize)
 }
 
 func (id *LDID) RandB() (uint64, error) {
-	return id.bf.ExtractUint64(RandBOffset, RandBSize)
+	return id.bf.ExtractUint64(randBOffset, randBSize)
 }
