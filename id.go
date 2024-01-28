@@ -146,6 +146,11 @@ func (id *LDID) String() string {
 		bytes[0:4], bytes[4:6], bytes[6:8], bytes[8:10], bytes[10:])
 }
 
+// Bytes returns the raw bytes of the LDID.
+func (id *LDID) Bytes() []byte {
+	return id.bf.Bytes()
+}
+
 func (id *LDID) Timestamp() (uint64, error) {
 	return id.bf.ExtractUint64(timestampOffset, timestampSize)
 }
