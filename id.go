@@ -2,10 +2,12 @@ package id
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"math/big"
+	"strings"
 	"time"
 
 	"go.loafoe.dev/bitfield/v2"
@@ -107,7 +109,37 @@ func New() (*LDID, error) {
 	return NewWithGenerator(defaultGenerator)
 }
 
-// String formats the UUID bytes into the canonical string representation.
+// parseUUIDString parses a canonical UUID string into a byte slice.
+func parseUUIDString(s string) ([]byte, error) {
+	// Remove hyphens from the string
+	s = strings.ReplaceAll(s, "-", "")
+
+	// Convert the string to bytes
+	bytes, err := hex.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
+// FromString parses the canonical string representation of a UUID into a new LDID.
+func FromString(s string) (*LDID, error) {
+	bytes, err := parseUUIDString(s)
+	if err != nil {
+		return &LDID{}, err
+	}
+
+	bf := bitfield.BigEndian.FromBytes(bytes, uint64(len(bytes)))
+
+	ldid := &LDID{
+		bf: bf,
+	}
+
+	return ldid, nil
+}
+
+// String formats the LDID bytes into the canonical string representation of a UUID.
 func (id *LDID) String() string {
 	bytes := id.bf.Bytes()
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
